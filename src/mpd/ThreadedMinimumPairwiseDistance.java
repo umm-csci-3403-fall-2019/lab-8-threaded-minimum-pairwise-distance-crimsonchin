@@ -2,15 +2,15 @@ package mpd;
 
 public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance {
 
-    private long globalResult = Integer.MAX_VALUE;
-    private int[] list;
+    private static long globalResult = Integer.MAX_VALUE;
+    private static int[] list;
     private int n;
     
 
     @Override
     public long minimumPairwiseDistance(int[] values) {
 
-        list = values;
+        this.list = values;
         n = values.length;
 
         ThreadedMinimumPairwiseDistance.lowerLeft ll = new ThreadedMinimumPairwiseDistance().new lowerLeft(0,0,0,n/2);
@@ -18,6 +18,7 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         ThreadedMinimumPairwiseDistance.center c = new ThreadedMinimumPairwiseDistance().new center(n/2,n/2,0,n);
         ThreadedMinimumPairwiseDistance.upperRight ur = new ThreadedMinimumPairwiseDistance().new upperRight(n/2,0,0,n);
 
+        if(n>0){
         Thread llThread = new Thread(ll);
         llThread.start();
 
@@ -29,6 +30,7 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
 
         Thread urThread = new Thread(ur);
         urThread.start();
+        
 
         try {
             
@@ -40,13 +42,15 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         } catch (InterruptedException exc){
             System.out.println("Thread interrupted");
         }
-
-        return globalResult;
+    }
+        long temp = this.globalResult;
+        this.globalResult = Integer.MAX_VALUE;
+        return temp;
     }
 
     public void updateGlobalResult(long localResult){
-        if(localResult < globalResult){
-            globalResult = localResult;
+        if(localResult < this.globalResult){
+            this.globalResult = localResult;
         }
     }
 
@@ -70,6 +74,7 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         for (int i = begin; i+iBound < end; ++i) {
             for (int j = begin; j+jBound < i; ++j) {
                 // Gives us all the pairs (i, j) where 0 <= j < i < values.length
+                // System.out.print(list[i]+ " " + list[j]);
                 long diff = Math.abs(list[i] - list[j]);
                 if (diff < localResult) {
                     localResult = diff;
@@ -98,7 +103,8 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         public void run() {
             long localResult = Integer.MAX_VALUE;
             for (int i = begin; i+iBound < end; ++i) {
-                for (int j = begin; j+jBound < i; ++j) {
+                for (int j = 0; j+jBound < i; ++j) {
+                    // System.out.print(list[i]+ " " + list[j]);
                     // Gives us all the pairs (i, j) where 0 <= j < i < values.length
                     long diff = Math.abs(list[i] - list[j]);
                     if (diff < localResult) {
@@ -106,7 +112,6 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
                     }
                 }
             }
-            System.out.println(localResult);
             updateGlobalResult(localResult);
         }
     }
@@ -127,8 +132,9 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         @Override
         public void run() {
             long localResult = Integer.MAX_VALUE;
-            for (int j = begin; j+jBound < end; ++j) {
-                for (int i = begin; i+iBound < j; ++i) {
+            for (int i = begin; i+iBound < end; ++i) {
+                for (int j = 0; j+jBound > i; ++j) {
+                    // System.out.print(list[i]+ " " + list[j]);
                     // Gives us all the pairs (i, j) where 0 <= j < i < values.length
                     long diff = Math.abs(list[i] - list[j]);
                     if (diff < localResult) {
@@ -136,7 +142,6 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
                     }
                 }
             }
-            System.out.println(localResult);
             updateGlobalResult(localResult);
         }
     }
@@ -158,7 +163,8 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
         public void run() {
             long localResult = Integer.MAX_VALUE;
             for (int i = begin; i+iBound < end; ++i) {
-                for (int j = begin; j+jBound < i; ++j) {
+                for (int j = 0; j+jBound < i; ++j) {
+                    // System.out.print(list[i]+ " " + list[j]);
                     // Gives us all the pairs (i, j) where 0 <= j < i < values.length
                     long diff = Math.abs(list[i] - list[j]);
                     if (diff < localResult) {
@@ -166,7 +172,6 @@ public class ThreadedMinimumPairwiseDistance implements MinimumPairwiseDistance 
                     }
                 }
             }
-            System.out.println(localResult);
             updateGlobalResult(localResult);
         }
     }
